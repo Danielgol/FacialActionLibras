@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+  facialactionlibras:
+    container_name: facialactionlibras
+    build:
+      context: .
+      dockerfile: docker/FacialActionLibras.Dockerfile
+    command: /bin/bash
+    volumes:
+      - ./src:/home/work/src
+      
