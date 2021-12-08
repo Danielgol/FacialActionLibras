@@ -380,6 +380,7 @@ def neural_net(path, image_path=None):
             exit_l = np.argmax(exit_l, axis=1)
             e_labels_u = encoder_u.inverse_transform(exit_u)
             e_labels_l = encoder_l.inverse_transform(exit_l)
+            print(e_labels_u,"\n",e_labels_l)
             # logger.info(e_labels_u)
             # logger.info(e_labels_l)
             output_u = np.append(output_u, e_labels_u)
