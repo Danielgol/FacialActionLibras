@@ -392,7 +392,7 @@ def neural_net(path, image_path=None):
     all_exit_u = np.matrix(zip(range(0, frames), output_u))
     all_exit_l = np.matrix(zip(range(0, frames), output_l))
 
-    return output_u, output_l
+    return all_exit_u, all_exit_l
 
     '''
     root = et.Element(
