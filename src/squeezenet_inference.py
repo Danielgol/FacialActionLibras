@@ -389,9 +389,7 @@ def neural_net(path, image_path=None):
             output_l = np.append(output_l, 72)
             continue
 
-    print(output_u)
-    all_exit_u = np.matrix(zip(range(0, frames), output_u))
-    all_exit_l = np.matrix(zip(range(0, frames), output_l))
+    return np.matrix(zip(range(0, frames), output_u)), np.matrix(zip(range(0, frames), output_l))
 
     '''
     root = et.Element(

@@ -14,7 +14,8 @@ def make_model_inference():
         create_directory(image_path)
         dt = datetime.now()
         dt_str = dt.strftime("%d-%m-%Y-%H-%M-%S")
-        neural_net(file, image_path)
+        all_exit_u, all_exit_l = neural_net(file, image_path)
+        print(all_exit_l)
         '''
         output = neural_net(file, image_path)
         output.write(
