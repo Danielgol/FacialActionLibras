@@ -389,9 +389,11 @@ def neural_net(path, image_path=None):
             output_l = np.append(output_l, 72)
             continue
 
+    print(output_u)
     all_exit_u = np.matrix(zip(range(0, frames), output_u))
     all_exit_l = np.matrix(zip(range(0, frames), output_l))
 
+    '''
     root = et.Element(
         "TIERS",
         **{"xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance"},
@@ -442,3 +444,4 @@ def neural_net(path, image_path=None):
             continue
 
     return tree1
+    '''

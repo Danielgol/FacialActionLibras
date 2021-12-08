@@ -14,12 +14,15 @@ def make_model_inference():
         create_directory(image_path)
         dt = datetime.now()
         dt_str = dt.strftime("%d-%m-%Y-%H-%M-%S")
+        neural_net(file, image_path)
+        '''
         output = neural_net(file, image_path)
         output.write(
             f"{ROOT_DIR}/outputs/{_f[-1]}-{dt_str}.xml",
             encoding="utf-8",
             xml_declaration=True,
         )
+        '''
 
 
 def get_face_frames():
