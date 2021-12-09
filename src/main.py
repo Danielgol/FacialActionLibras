@@ -15,7 +15,8 @@ def make_model_inference():
         dt = datetime.now()
         dt_str = dt.strftime("%d-%m-%Y-%H-%M-%S")
         all_exit_u, all_exit_l = neural_net(file, image_path)
-        print(all_exit_l.shape)
+        return all_exit_u, all_exit_l
+        #print(all_exit_l.shape)
         '''
         output = neural_net(file, image_path)
         output.write(
