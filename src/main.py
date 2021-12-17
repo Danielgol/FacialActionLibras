@@ -6,9 +6,9 @@ from utils.utils import create_directory, get_all_files_from_directory
 
 
 def make_model_inference():
-    files_name = get_all_files_from_directory("../data/raw/*.avi")
+    files_name = get_all_files_from_directory("../data/raw/*.mp4")
     for file in files_name:
-        _f = file.split(".avi")
+        _f = file.split(".mp4")
         _f = _f[0].split("/")
         image_path = f"../data/examples/images/{_f[-1]}"
         create_directory(image_path)
@@ -29,10 +29,10 @@ def make_model_inference():
 
 def get_face_frames():
     files_name = get_all_files_from_directory(
-        "../data/examples/video-teste.avi"
+        "../data/examples/video-teste.mp4"
     )
     for file in files_name:
-        _f = file.split(".avi")
+        _f = file.split(".mp4")
         _f = _f[0].split("/")
         image_path = f"../data/examples/images/{_f[-1]}"
         create_directory(image_path)
