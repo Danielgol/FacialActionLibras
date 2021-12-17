@@ -7,12 +7,28 @@ from utils.utils import create_directory, get_all_files_from_directory
 
 def make_model_inference():
     files_name = get_all_files_from_directory("../data/raw/*.mp4")
-    files_name.append(get_all_files_from_directory("../data/raw/*.avi"))
     for file in files_name:
-        if file.split('.')[1] == "mp4":
-            _f = file.split(".mp4")
-        else:
-            _f = file.split(".avi")
+        _f = file.split(".mp4")
+        _f = _f[0].split("/")
+        image_path = f"../data/examples/images/{_f[-1]}"
+        create_directory(image_path)
+        dt = datetime.now()
+        dt_str = dt.strftime("%d-%m-%Y-%H-%M-%S")
+        output_u, output_l = neural_net(file, image_path)
+        return output_u, output_l
+        #print(all_exit_l.shape)
+        '''
+        output = neural_net(file, image_path)
+        output.write(
+            f"{ROOT_DIR}/outputs/{_f[-1]}-{dt_str}.xml",
+            encoding="utf-8",
+            xml_declaration=True,
+        )
+        '''
+        
+    files_name = get_all_files_from_directory("../data/raw/*.avi")
+    for file in files_name:
+        _f = file.split(".avi")
         _f = _f[0].split("/")
         image_path = f"../data/examples/images/{_f[-1]}"
         create_directory(image_path)
