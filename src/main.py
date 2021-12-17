@@ -7,8 +7,12 @@ from utils.utils import create_directory, get_all_files_from_directory
 
 def make_model_inference():
     files_name = get_all_files_from_directory("../data/raw/*.mp4")
+    files_name.append(get_all_files_from_directory("../data/raw/*.avi"))
     for file in files_name:
-        _f = file.split(".mp4")
+        if file.split('.')[1] == "mp4":
+            _f = file.split(".mp4")
+        else:
+            _f = file.split(".avi")
         _f = _f[0].split("/")
         image_path = f"../data/examples/images/{_f[-1]}"
         create_directory(image_path)
