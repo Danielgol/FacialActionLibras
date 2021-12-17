@@ -9,6 +9,8 @@ from xml.dom import minidom
 from xml.etree import ElementTree, cElementTree
 from xml.etree.ElementTree import tostring
 
+import matplotlib as plt
+
 import cv2
 import dlib
 import numpy as np
@@ -312,6 +314,8 @@ def neural_net(path, image_path=None):
         points_l = np.empty((32, 2)) * 0
         if ret is True:
             a, l = crop_face(im, i, image_path)
+            return a, l
+            '''
             c = get_landmarks(a)
             points_u[:9, :] = c[17:26, :]
             points_u[10:, :] = c[36:47, :]
@@ -393,6 +397,7 @@ def neural_net(path, image_path=None):
     all_exit_l = np.matrix(zip(range(0, frames), output_l))
 
     return all_exit_u, all_exit_l
+    '''
 
     '''
     root = et.Element(
