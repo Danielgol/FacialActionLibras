@@ -312,6 +312,8 @@ def neural_net(path, image_path=None):
         points_l = np.empty((32, 2)) * 0
         if ret is True:
             a, l = crop_face(im, i, image_path)
+            return a, l
+            '''
             c = get_landmarks(a)
             points_u[:9, :] = c[17:26, :]
             points_u[10:, :] = c[36:47, :]
@@ -394,6 +396,7 @@ def neural_net(path, image_path=None):
     all_exit_l = np.matrix(zip(range(0, frames), output_l))
 
     return output_u, output_l
+    '''
 
     '''
     root = et.Element(
