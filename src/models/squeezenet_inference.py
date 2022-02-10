@@ -9,6 +9,10 @@ from xml.dom import minidom
 from xml.etree import ElementTree, cElementTree
 from xml.etree.ElementTree import tostring
 
+#Phoenix
+import math
+import mediapipe as mp
+
 import cv2
 import dlib
 import numpy as np
@@ -45,6 +49,32 @@ def get_landmarks(im):
         return np.matrix([[p.x, p.y] for p in predictor(im, rect).parts()])
 
 
+#Phoenix
+def crop_face(image, i, image_path=None):
+    
+    if image_path:
+        img_write(f"{image_path}/img_video_frame_{i+1}.png", image)
+    
+    with mp_face_detection.FaceDetection(model_selection=1, min_detection_confidence=0.5) as face_detection:
+        # Convert the BGR image to RGB and process it with MediaPipe Face Detection.
+        results = face_detection.process(cv2.cvtColor(image, cv2.COLOR_BGR2RGB))
+
+        # Draw face detections of each face.
+        if not results.detections:
+            return np.zeros((224,224,3), np.uint8)
+
+    annotated_image = image.copy()
+    for detection in results.detections:
+        ymin = math.floor(detection.location_data.relative_bounding_box.ymin * 224)
+        xmin = math.floor(detection.location_data.relative_bounding_box.xmin * 224)
+        width = math.floor(detection.location_data.relative_bounding_box.width * 224)
+        height = math.floor(detection.location_data.relative_bounding_box.height * 224)
+        
+        crop_img = annotated_image[ymin-10:ymin+height+10, xmin-10:xmin+width+10]
+        return crop_img
+
+
+'''
 def crop_face(im, i, image_path=None):
     if image_path:
         img_write(f"{image_path}/img_video_frame_{i+1}.png", im)
@@ -64,6 +94,7 @@ def crop_face(im, i, image_path=None):
             )
             sub_face = im[y : y + h, x : x + w]
         return sub_face, l
+'''
 
 
 def img_write(path, img):
@@ -295,7 +326,124 @@ def get_face_info(path, image_path=None):
 
     return res
 
+#Phoenix
+def neural_net(path, image_path=None):
+    v_entry = cv2.VideoCapture(path, 0)
+    frames = int(v_entry.get(cv2.CAP_PROP_FRAME_COUNT))
+    fps = v_entry.get(cv2.CAP_PROP_FPS)
+    output_u = []
+    output_l = []
+    M = []
+    
+    for i, j in enumerate(range(0, frames)):
+        v_entry.set(1, int(j))
+        ret, im = v_entry.read()
+        
+        #im = im[10:100, 60:150]
+        im = cv2.cvtColor(im, cv2.COLOR_BGR2RGB)
+        
+        #print("input:")
+        #plt.imshow(im)
+        #plt.show()
+        
+        points_u = np.empty((21, 2)) * 0
+        points_l = np.empty((32, 2)) * 0
+        
+        if ret is True:
+            a = crop_face(im, i, image_path)
+            a = cv2.resize(a, dsize=(224, 224))
+            c = get_landmarks(a)
+            
+            #print("output:")
+            #plt.imshow(im)
+            #plt.show()
+            #print(c)
+            
+            c = get_landmarks(a)
+            points_u[:9, :] = c[17:26, :]
+            points_u[10:, :] = c[36:47, :]
+            vp = np.stack((points_u))
+            points_l[:12, :] = c[2:14, :]
+            points_l[13:, :] = c[48:67, :]
+            vb = np.stack((points_l))
+            vs_brown_e = np.squeeze(np.asarray(c[19] - c[17]))
+            vi_brown_e = np.squeeze(np.asarray(c[21] - c[17]))
+            vs_brown_d = np.squeeze(np.asarray(c[24] - c[26]))
+            vi_brown_d = np.squeeze(np.asarray(c[22] - c[26]))
+            a_brown_e = np.arccos(
+                np.dot(vs_brown_e, vi_brown_e, out=None)
+                / (np.linalg.norm(vs_brown_e) * np.linalg.norm(vi_brown_e))
+            )
+            a_brown_d = np.arccos(
+                np.dot(vs_brown_d, vi_brown_d, out=None)
+                / (np.linalg.norm(vs_brown_d) * np.linalg.norm(vi_brown_d))
+            )
+            v1_eye_e = np.squeeze(np.asarray(c[37] - c[41]))
+            v2_eye_e = np.squeeze(np.asarray(c[38] - c[40]))
+            v1_eye_d = np.squeeze(np.asarray(c[43] - c[47]))
+            v2_eye_d = np.squeeze(np.asarray(c[44] - c[46]))
+            vs = np.stack(
+                (
+                    vs_brown_e,
+                    vi_brown_e,
+                    vs_brown_d,
+                    vi_brown_d,
+                    v1_eye_e,
+                    v2_eye_e,
+                    v1_eye_d,
+                    v2_eye_d,
+                )
+            )
+            d_lips_h1 = np.squeeze(np.asarray(c[48] - c[54]))
+            d_lips_h2 = np.squeeze(np.asarray(c[60] - c[64]))
+            d_lips_v1 = np.squeeze(np.asarray(c[51] - c[57]))
+            d_lips_v2 = np.squeeze(np.asarray(c[62] - c[66]))
+            vl = np.stack((d_lips_h1, d_lips_h2, d_lips_v1, d_lips_v2))
+            p_u = [vp.tolist(), vs.tolist()]
+            points_upper = np.hstack(
+                [np.hstack(np.vstack(p_u)), a_brown_e, a_brown_d]
+            )
+            p_l = [vb.tolist(), vl.tolist()]
+            points_lower = np.hstack(np.vstack(p_l)).reshape((36, 2))
+            r = cv2.resize(
+                a, dsize=(im_s, im_s), interpolation=cv2.INTER_CUBIC
+            )
+            r = r[:, :, 1]
+            upper = np.array(r[:60, :])
+            lower = np.array(r[60:, :])
+            im_u = np.vstack((upper.T, points_upper))
+            im_u = im_u.astype("float32")
+            im_u /= 255
+            im_l = np.vstack((lower.T, points_lower[:, 0], points_lower[:, 1]))
+            im_l = im_l.astype("float32")
+            im_l /= 255
+            x_upper = np.expand_dims(im_u, axis=0)
+            x_lower = np.expand_dims(im_l, axis=0)
+            x_upper = x_upper.reshape((1, 60, 97, 1))
+            x_lower = x_lower.reshape((1, 36, 98, 1))
+            exit_u = modelu.predict(x_upper)
+            exit_l = modell.predict(x_lower)
+            exit_u = np.argmax(exit_u, axis=1)
+            exit_l = np.argmax(exit_l, axis=1)
+            e_labels_u = encoder_u.inverse_transform(exit_u)
+            e_labels_l = encoder_l.inverse_transform(exit_l)
+            # logger.info(e_labels_u)
+            # logger.info(e_labels_l)
+            output_u = np.append(output_u, e_labels_u)
+            output_l = np.append(output_l, e_labels_l)
+        else:
+            output_u = np.append(output_u, 74)
+            output_l = np.append(output_l, 72)
+            continue
+            
+    all_exit_u = np.matrix(zip(range(0, frames), output_u))
+    all_exit_l = np.matrix(zip(range(0, frames), output_l))
+    
+    return all_exit_u, all_exit_l
 
+
+'''
+#OLD
 def neural_net(path, image_path=None):
     logger.info("Making predictions...")
     v_entry = cv2.VideoCapture(path, 0)
@@ -313,7 +461,7 @@ def neural_net(path, image_path=None):
         if ret is True:
             a, l = crop_face(im, i, image_path)
             return a, l
-            '''
+            ###
             c = get_landmarks(a)
             points_u[:9, :] = c[17:26, :]
             points_u[10:, :] = c[36:47, :]
@@ -396,9 +544,10 @@ def neural_net(path, image_path=None):
     all_exit_l = np.matrix(zip(range(0, frames), output_l))
 
     return output_u, output_l
-    '''
 
-    '''
+    ###
+
+
     root = et.Element(
         "TIERS",
         **{"xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance"},
