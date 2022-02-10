@@ -25,7 +25,7 @@ def make_model_inference():
             xml_declaration=True,
         )
         '''
-        
+
     files_name = get_all_files_from_directory("../data/raw/*.avi")
     for file in files_name:
         _f = file.split(".avi")
